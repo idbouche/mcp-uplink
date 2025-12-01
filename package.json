@@ -1,0 +1,62 @@
+{
+    "name": "@mcp-provider/cli",
+    "version": "0.1.0",
+    "description": "Secure Bridge CLI for MCP Provider - Connect local AI clients to remote MCP infrastructure",
+    "main": "dist/index.js",
+    "bin": {
+        "mcp-bridge": "dist/bin/cli.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/bin/cli.js",
+        "dev": "ts-node src/bin/cli.ts",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "lint": "eslint src/**/*.ts",
+        "format": "prettier --write src/**/*.ts",
+        "audit": "npm audit",
+        "prepublishOnly": "npm run test && npm run build"
+    },
+    "keywords": [
+        "mcp",
+        "ai",
+        "bridge",
+        "proxy",
+        "claude",
+        "cursor",
+        "llm"
+    ],
+    "author": "MCP Provider",
+    "license": "MIT",
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.1",
+        "axios": "^1.7.7",
+        "commander": "^12.1.0",
+        "dotenv": "^16.4.5",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.2",
+        "@typescript-eslint/eslint-plugin": "^7.13.0",
+        "@typescript-eslint/parser": "^7.13.0",
+        "eslint": "^8.57.0",
+        "prettier": "^3.3.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.5",
+        "vitest": "^4.0.14"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mcp-provider/mcp-provider.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mcp-provider/mcp-provider/issues"
+    },
+    "homepage": "https://github.com/mcp-provider/mcp-provider#readme"
+}

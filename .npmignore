@@ -1,0 +1,22 @@
+# Source files
+src/
+tests/
+tsconfig.json
+.eslintrc.json
+.prettierrc
+
+# Logs & System
+logs/
+*.log
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Editor config
+.vscode/
+.idea/
+
+# Lock files (optional, but often excluded for libs)
+# package-lock.json
