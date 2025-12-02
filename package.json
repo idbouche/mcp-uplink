@@ -1,10 +1,10 @@
 {
-    "name": "@mcp-provider/cli",
+    "name": "mcp-uplink",
     "version": "0.1.0",
-    "description": "Secure Bridge CLI for MCP Provider - Connect local AI clients to remote MCP infrastructure",
+    "description": "Secure bridge CLI for MCP uplink - Connect local AI clients to remote MCP infrastructure",
     "main": "dist/index.js",
     "bin": {
-        "mcp-bridge": "dist/bin/cli.js"
+        "mcp-uplink": "dist/bin/cli.js"
     },
     "scripts": {
         "build": "tsc",
@@ -26,7 +26,7 @@
         "cursor",
         "llm"
     ],
-    "author": "MCP Provider",
+    "author": "Id Bouche Mohammed",
     "license": "MIT",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.1",
@@ -53,10 +53,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mcp-provider/mcp-provider.git"
+        "url": "git+https://github.com/idbouche/mcp-uplink.git"
     },
     "bugs": {
-        "url": "https://github.com/mcp-provider/mcp-provider/issues"
+        "url": "https://github.com/idbouche/mcp-uplink/issues"
     },
-    "homepage": "https://github.com/mcp-provider/mcp-provider#readme"
+    "homepage": "https://github.com/idbouche/mcp-uplink#readme"
 }

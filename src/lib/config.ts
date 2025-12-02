@@ -15,7 +15,7 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-export function loadConfig(args: Record<string, any>): Config {
+export function loadConfig(args: Record<string, unknown>): Config {
     // Priorité : Arguments CLI > Variables d'environnement
     const rawConfig = {
         mcpUrl: args.url || process.env.MCP_SERVER_URL,

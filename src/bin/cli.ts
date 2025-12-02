@@ -6,14 +6,14 @@ import { McpBridge } from '../lib/bridge.js';
 const program = new Command();
 
 program
-    .name('mcp-bridge')
+    .name('mcp-uplink')
     .description('Connect local AI clients (Claude, Cursor) to remote MCP infrastructure securely')
     .version('0.1.0');
 
 program
     .command('connect')
     .description('Start the bridge in stdio mode')
-    .requiredOption('-u, --url <url>', 'Remote MCP Server URL (e.g., https://api.mcpprovider.com/api/mcp/slack)')
+    .requiredOption('-u, --url <url>', 'Remote MCP Server URL (e.g., https://mcp-uplink.com/api/mcp/slack)')
     .option('-k, --api-key <key>', 'MCP Platform API Key')
     .option('--no-forward-env', 'Disable environment variable forwarding')
     .option('--env-prefix <prefix>', 'Only forward environment variables starting with this prefix')

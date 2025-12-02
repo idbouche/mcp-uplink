@@ -1,6 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, CallToolResult, ListToolsResult } from "@modelcontextprotocol/sdk/types.js";
 import axios, { AxiosError } from "axios";
 import { Config, captureEnvironment } from "./config.js";
 
@@ -16,7 +16,7 @@ export class McpBridge {
         // Initialiser le serveur local (interface pour Claude/Cursor)
         this.server = new Server(
             {
-                name: "@mcp-provider/cli-bridge",
+                name: "mcp-uplink",
                 version: "0.1.0",
             },
             {
@@ -33,7 +33,7 @@ export class McpBridge {
         // Handler: List Tools
         this.server.setRequestHandler(ListToolsRequestSchema, async () => {
             try {
-                const response = await this.forwardRequest("tools/list", {});
+                const response = await this.forwardRequest<ListToolsResult>("tools/list", {});
                 return response;
             } catch (error) {
                 this.logError("ListTools Error", error);
@@ -45,7 +45,7 @@ export class McpBridge {
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             try {
                 // For tools/call, pass the tool name and arguments
-                const response = await this.forwardRequest("tools/call", {
+                const response = await this.forwardRequest<CallToolResult>("tools/call", {
                     name: request.params.name,
                     arguments: request.params.arguments
                 });
@@ -60,7 +60,7 @@ export class McpBridge {
     /**
      * Transfère la requête vers la plateforme distante via HTTP
      */
-    private async forwardRequest(method: string, params: any): Promise<any> {
+    private async forwardRequest<T>(method: string, params: unknown): Promise<T> {
         const url = `${this.config.mcpUrl}`; // L'URL de base, ex: http://localhost:3000/api/mcp/slack
 
         // Préparer les headers spéciaux
@@ -104,7 +104,7 @@ export class McpBridge {
             return response.data.result;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<any>;
+                const axiosError = error as AxiosError<{ error?: { message?: string } }>;
                 const msg = axiosError.response?.data?.error?.message || axiosError.message;
                 throw new Error(`Remote MCP Error: ${msg}`);
             }
@@ -112,14 +112,14 @@ export class McpBridge {
         }
     }
 
-    private logError(context: string, error: any) {
+    private logError(context: string, error: unknown) {
         // On log sur stderr pour ne pas casser le flux JSON-RPC sur stdout
-        console.error(`[MCP-BRIDGE] ${context}:`, error instanceof Error ? error.message : error);
+        console.error(`[MCP-UPLINK] ${context}:`, error instanceof Error ? error.message : error);
     }
 
     public async start() {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        console.error(`[MCP-BRIDGE] Connected to Stdio. Forwarding to ${this.config.mcpUrl}`);
+        console.error(`[MCP-UPLINK] Connected to Stdio. Forwarding to ${this.config.mcpUrl}`);
     }
 }

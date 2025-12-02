@@ -1,14 +1,16 @@
-# MCP Bridge CLI 🌉
+# MCP Uplink CLI 🌉
 
 **Securely connect local AI clients (Claude Desktop, Cursor, VS Code) to remote MCP infrastructure.**
 
-The `mcp-bridge` CLI acts as a local proxy. It runs on your machine, captures your local environment variables (like API keys), and securely forwards them to the remote MCP Provider platform via encrypted HTTP headers.
+The `mcp-uplink` CLI acts as a local proxy. It runs on your machine, captures your local environment variables (like API keys), and securely forwards them to the remote MCP Uplink platform via encrypted HTTP headers.
 
 **✅ Zero Trust Architecture**: Your secrets (Slack tokens, GitHub keys) never leave your machine's configuration until the moment they are needed, and are never stored on the server.
 
 ## Usage with Claude Desktop (Standard Configuration)
 
-Add this to your `claude_desktop_config.json` (Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`).
+Add this to your `claude_desktop_config.json` (Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`)
+(Windows: `%APPDATA%/Claude/claude_desktop_config.json`)
+(Linux: `~/.config/Claude/claude_desktop_config.json`).
 
 This configuration uses the standard MCP Stdio transport, supported by all major clients (Claude, Cursor, etc.).
 
@@ -19,14 +21,16 @@ This configuration uses the standard MCP Stdio transport, supported by all major
       "command": "npx",
       "args": [
         "-y",
-        "@mcp-provider/cli",
+        "mcp-uplink",
         "connect",
-        "--url", "https://api.your-platform.com/api/mcp/slack"
+        "--url", "https://mcp-uplink.com/api/mcp/slack"
       ],
       "env": {
-        "MCP_API_KEY": "YOUR_PLATFORM_API_KEY",
-        "SLACK_BOT_TOKEN": "xoxb-your-slack-token-here",
-        "MCP_ENABLED_TOOLS": "send_message,list_users"
+        "MCP_API_KEY": "MCP_UPLINK_API_KEY",
+        "MCP_ENABLED_TOOLS": "send_message,list_users",
+        "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN",
+        "SLACK_TEAM_ID": "TEAM_ID",
+        "SLACK_CHANNEL_ID": "CHANNEL_ID"
       }
     }
   }
@@ -41,10 +45,10 @@ This configuration uses the standard MCP Stdio transport, supported by all major
 
 ## How it Works
 
-1. **Claude Desktop** starts `mcp-bridge` locally using the `command` and `args`.
+1. **Claude Desktop** starts `mcp-uplink` locally using the `command` and `args`.
 2. **Claude** passes the `env` variables to the bridge process.
-3. **mcp-bridge** connects to the remote URL defined in `--url`.
-4. **mcp-bridge** injects the environment variables into a secure HTTP header (`X-Mcp-Env`).
+3. **mcp-uplink** connects to the remote URL defined in `--url`.
+4. **mcp-uplink** injects the environment variables into a secure HTTP header (`X-Mcp-Env`).
 5. **Remote Server** receives the request, decrypts the env vars, and executes the MCP tool.
 
 ## Options
