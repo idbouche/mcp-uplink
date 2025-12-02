@@ -1,6 +1,6 @@
 {
     "name": "mcp-uplink",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Secure bridge CLI for MCP uplink - Connect local AI clients to remote MCP infrastructure",
     "main": "dist/index.js",
     "bin": {
