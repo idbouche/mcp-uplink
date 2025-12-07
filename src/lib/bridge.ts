@@ -1,7 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, CallToolResult, ListToolsResult } from "@modelcontextprotocol/sdk/types.js";
-import axios, { AxiosError } from "axios";
 import { Config, captureEnvironment } from "./config.js";
 
 export class McpBridge {
@@ -17,7 +16,7 @@ export class McpBridge {
         this.server = new Server(
             {
                 name: "mcp-uplink",
-                version: "0.1.0",
+                version: "0.2.0",
             },
             {
                 capabilities: {
@@ -58,7 +57,7 @@ export class McpBridge {
     }
 
     /**
-     * Transfère la requête vers la plateforme distante via HTTP
+     * Transfère la requête vers la plateforme distante via HTTP (utilise fetch natif)
      */
     private async forwardRequest<T>(method: string, params: unknown): Promise<T> {
         const url = `${this.config.mcpUrl}`; // L'URL de base, ex: http://localhost:3000/api/mcp/slack
@@ -83,30 +82,34 @@ export class McpBridge {
         };
 
         try {
-            // Note: On suppose que l'endpoint distant accepte du JSON-RPC ou REST compatible
-            // Si l'endpoint est purement SSE, il faudrait une autre approche.
-            // Ici on vise l'endpoint /api/mcp/execute que nous avons déjà testé
+            const response = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+            });
 
-            // Adaptation pour notre endpoint /api/mcp/execute existant
-            // Notre endpoint attend: { mcpSlug, method, params, clientEnv }
-            // Mais le bridge est générique. 
-            // Si on tape sur /api/mcp/slack, c'est un endpoint spécifique.
-
-            // Pour être compatible avec notre plateforme actuelle, on doit envoyer
-            // les données comme le serveur les attend.
-
-            const response = await axios.post(url, payload, { headers });
-
-            if (response.data.error) {
-                throw new Error(response.data.error.message || "Unknown remote error");
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error?.message || errorMessage;
+                } catch {
+                    // Ignore JSON parse error, use default message
+                }
+                throw new Error(`Remote MCP Error: ${errorMessage}`);
             }
 
-            return response.data.result;
+            const data = await response.json() as { error?: { message?: string }; result?: T };
+
+            if (data.error) {
+                throw new Error(data.error.message || "Unknown remote error");
+            }
+
+            return data.result as T;
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<{ error?: { message?: string } }>;
-                const msg = axiosError.response?.data?.error?.message || axiosError.message;
-                throw new Error(`Remote MCP Error: ${msg}`);
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                throw new Error(`Remote MCP Error: Network error - ${error.message}`);
             }
             throw error;
         }

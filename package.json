@@ -1,6 +1,6 @@
 {
     "name": "mcp-uplink",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Secure bridge CLI for MCP uplink - Connect local AI clients to remote MCP infrastructure",
     "main": "dist/index.js",
     "bin": {
@@ -8,6 +8,7 @@
     },
     "scripts": {
         "build": "tsc",
+        "bundle": "esbuild src/bin/cli.ts --bundle --platform=node --target=node18 --outfile=dist/bin/cli.js --format=cjs --external:@modelcontextprotocol/sdk",
         "start": "node dist/bin/cli.js",
         "dev": "ts-node src/bin/cli.ts",
         "test": "vitest run",
@@ -30,7 +31,6 @@
     "license": "MIT",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.1",
-        "axios": "^1.7.7",
         "commander": "^12.1.0",
         "dotenv": "^16.4.5",
         "zod": "^3.23.8"
@@ -39,6 +39,7 @@
         "@types/node": "^20.14.2",
         "@typescript-eslint/eslint-plugin": "^7.13.0",
         "@typescript-eslint/parser": "^7.13.0",
+        "esbuild": "^0.24.0",
         "eslint": "^8.57.0",
         "prettier": "^3.3.2",
         "ts-node": "^10.9.2",
