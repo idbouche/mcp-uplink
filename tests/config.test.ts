@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { captureEnvironment, loadConfig } from '../src/lib/config.js';
+import { getCapturedEnv, captureClientEnv, loadConfig } from '../src/lib/config.js';
 
 describe('Config & Environment Capture', () => {
     const originalEnv = process.env;
@@ -17,59 +17,53 @@ describe('Config & Environment Capture', () => {
         const args = {
             url: 'https://api.test.com',
             apiKey: 'test-key',
-            forwardEnv: 'true',
         };
         const config = loadConfig(args);
         expect(config.mcpUrl).toBe('https://api.test.com');
         expect(config.apiKey).toBe('test-key');
-        expect(config.forwardEnv).toBe(true);
     });
 
-    it('should capture environment variables', () => {
-        process.env.TEST_VAR = 'secret-value';
-        process.env.OTHER_VAR = 'other';
+    it('should capture allowed environment variables', () => {
+        // Setup mock environment with mixed variables
+        process.env.SLACK_BOT_TOKEN = 'xoxb-123';
+        process.env.GITHUB_TOKEN = 'ghp-456';
+        process.env.PATH = '/usr/bin'; // Should be ignored
+        process.env.npm_package_version = '1.0.0'; // Should be ignored
 
-        const config = loadConfig({
-            url: 'https://api.test.com',
-            apiKey: 'key',
-            forwardEnv: 'true'
-        });
+        // Trigger capture explicitly (usually called by loadConfig)
+        captureClientEnv();
+        const captured = getCapturedEnv();
 
-        const captured = captureEnvironment(config);
-        expect(captured['TEST_VAR']).toBe('secret-value');
-        expect(captured['OTHER_VAR']).toBe('other');
-    });
+        expect(captured['SLACK_BOT_TOKEN']).toBe('xoxb-123');
+        expect(captured['GITHUB_TOKEN']).toBe('ghp-456');
 
-    it('should filter environment variables by prefix', () => {
-        process.env.MYAPP_SECRET = 'secret';
-        process.env.OTHER_VAR = 'ignored';
-
-        const config = loadConfig({
-            url: 'https://api.test.com',
-            apiKey: 'key',
-            forwardEnv: 'true',
-            envPrefix: 'MYAPP_'
-        });
-
-        const captured = captureEnvironment(config);
-        expect(captured['MYAPP_SECRET']).toBe('secret');
-        expect(captured['OTHER_VAR']).toBeUndefined();
-    });
-
-    it('should blacklist system variables', () => {
-        process.env.PATH = '/usr/bin';
-        process.env.USER = 'root';
-        process.env.CUSTOM_VAR = 'ok';
-
-        const config = loadConfig({
-            url: 'https://api.test.com',
-            apiKey: 'key',
-            forwardEnv: 'true'
-        });
-
-        const captured = captureEnvironment(config);
+        // System variables should be ignored
         expect(captured['PATH']).toBeUndefined();
-        expect(captured['USER']).toBeUndefined();
-        expect(captured['CUSTOM_VAR']).toBe('ok');
+        expect(captured['npm_package_version']).toBeUndefined();
+    });
+
+    it('should capture env vars via loadConfig flow', () => {
+        process.env.API_KEY = 'secret';
+
+        loadConfig({
+            url: 'https://api.test.com',
+            apiKey: 'key'
+        });
+
+        const captured = getCapturedEnv();
+        expect(captured['API_KEY']).toBe('secret');
+    });
+
+    it('should ignore internal MCP vars', () => {
+        process.env.MCP_API_KEY = 'do-not-forward';
+        process.env.MCP_SERVER_URL = 'https://...';
+        process.env.USER_VAR = 'forward-me';
+
+        captureClientEnv();
+        const captured = getCapturedEnv();
+
+        expect(captured['MCP_API_KEY']).toBeUndefined();
+        expect(captured['MCP_SERVER_URL']).toBeUndefined();
+        expect(captured['USER_VAR']).toBe('forward-me');
     });
 });

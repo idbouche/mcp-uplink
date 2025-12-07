@@ -1,7 +1,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, CallToolResult, ListToolsResult } from "@modelcontextprotocol/sdk/types.js";
-import { Config, captureEnvironment } from "./config.js";
+import { Config, getCapturedEnv } from "./config.js";
 
 export class McpBridge {
     private server: Server;
@@ -10,7 +10,8 @@ export class McpBridge {
 
     constructor(config: Config) {
         this.config = config;
-        this.capturedEnv = captureEnvironment(config);
+        // Get only the env vars from the client's JSON config, NOT from .env
+        this.capturedEnv = getCapturedEnv();
 
         // Initialiser le serveur local (interface pour Claude/Cursor)
         this.server = new Server(
